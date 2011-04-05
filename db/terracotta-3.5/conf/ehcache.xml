@@ -6,12 +6,12 @@
     <!-- For standalone unclustered ehcache, comment the following line -->
     <terracottaConfig url="gj-laptop:9510"/>
 
-    <defaultCache maxElementsInMemory="10000"
+    <defaultCache maxElementsInMemory="100000"
                   eternal="true"
                   memoryStoreEvictionPolicy="LRU"
                   statistics="false" />
     <cache name="usertable"
-           maxElementsInMemory="10000"
+           maxElementsInMemory="100000"
            eternal="true"
            memoryStoreEvictionPolicy="LRU"
            overflowToOffHeap="false">
