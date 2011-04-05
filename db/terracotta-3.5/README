@@ -1,0 +1,58 @@
+= Building and running the Terracotta Distributed Server client for YCSB =
+
+== Building the Terracotta DB client ==
+1. Download and extract the Terracotta kit from one of the following 
+locations: -
+ a. (Open Source) http://terracotta.org/dl/oss-download-catalog
+ b. (Enterprise) http://terracotta.org/dl/download-enterprise-ehcache
+
+2. Copy the following Jars from the Terracotta open source or enterprise kit: -
+ a. ehcache-core(-ee)-2.4.x.jar (from <extracted kit>/ehcache/lib)
+ b. ehcache-terracotta(-ee)-2.4.x.jar (from <extracted kit>/ehcache/lib)
+ c. slf4j-api-1.6.1.jar (from <extracted kit>/ehcache/lib)
+ d. slf4j-jdk14-1.6.1.jar (from <extracted kit>/ehcache/lib)
+ e. terracotta-toolkit-1.2-runtime-ee-3.0.0.jar  (from <extracted kit>/common)
+3. run `ant db-terracotta-3.5` from the ycsb source directory
+
+== Running with the Terracotta DB client ==
+
+The DB client supports 2 main modes of operation viz. standalone and clustered.
+In standalone mode there is only a local Ehcache. In clustered, a Terracotta 
+Server Array backed Ehcahe is used. 
+
+To run ENTERPRISE versions either of these modes, you need to use "-ee" 
+versions of the jars listed above and copy a trial/enterprise license key into 
+the db/terracotta-3.5/conf directory.
+
+=== Setup instructions for standalone Ehcache ===
+- Comment out the <tcConfigUrl> and <terracotta> elements in 
+db/terracotta-3.5/conf/ehcache.xml
+
+=== Setup instructions for clustered Ehcache ===
+1. Install Terracotta on each of the nodes you will be using for the distributed
+ cache.
+
+2. Edit db\terracotta-3.5\conf\tc-config.xml and add a <server> node for each of the nodes that will be a part of the Terracotta Server Array.
+
+3. In the <mirror-groups> section add a <mirror-group> node for each of the 
+<server> nodes added above.
+
+4. Copy the db\terracotta-3.5\conf\tc-config.xml to the Terracotta installation 
+directory of each of the nodes.
+
+5. Start up the Terracotta Server Array by doing the following on each of the 
+nodes
+ a. cd <terracotta install directory>
+ b. bin/start-tc-server.sh -f tc-config.xml
+
+6. Edit the db/terracotta-3.5/conf/ehcache.xml file and replace the host name 
+in the configuration with the location of any one of the Terracotta servers 
+set up above.
+
+=== Running the test ===
+1. Add this string "db/terracotta-3.5/lib/*:db/terracotta-3.5/conf" on Linux or 
+"db\terracotta-3.5\lib\*;db\terracotta-3.5\conf" on Windows to the -cp argument
+ when running the workload
+2. pass in -Dcom.tc.productkey.path=db/terracotta-3.5conf/terracotta-license.key
+
+e.g. java -cp build/ycsb.jar:db/terracotta-3.5/lib/*:db/terracotta-3.5/conf -Dcom.tc.productkey.path=db/terracotta-3.5/conf/terracotta-license.key com.yahoo.ycsb.Client -load -P workloads/workloadb -db com.yahoo.ycsb.db.TerracottaClient

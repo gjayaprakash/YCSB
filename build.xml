@@ -44,6 +44,11 @@
 		<property name="db.dir" value="db/voldemort"/>
 		<antcall target="dbcompile"/>
 	</target>
+
+   	<target name="dbcompile-terracotta-3.5" depends="compile">
+		<property name="db.dir" value="db/terracotta-3.5"/>
+		<antcall target="dbcompile"/>
+	</target>
    	
    	<target name="dbcompile-jdbc" depends="compile">
    		<property name="db.dir" value="db/jdbc"/>
@@ -52,7 +57,7 @@
 	
  	<target name="compile">
         <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="build.classpath" deprecation="on">
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="build.classpath" deprecation="on" debug="on">
           <compilerarg value="-Xlint:unchecked"/>
         </javac>
         <antcall target="makejar"/>
@@ -65,7 +70,7 @@
 	    </path>
 		
     	<mkdir dir="${classes.dir}"/>
-        <javac srcdir="${db.dir}/src" destdir="${classes.dir}" classpathref="dbclasspath" deprecation="on">
+        <javac srcdir="${db.dir}/src" destdir="${classes.dir}" classpathref="dbclasspath" deprecation="on" debug="on">
           <compilerarg value="-Xlint:unchecked"/>
         </javac>
         <antcall target="makejar"/>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="ehcache.xsd"
+         updateCheck="false" monitoring="off"
+         dynamicConfig="false">
+    <!-- For standalone unclustered ehcache, comment the following line -->
+    <terracottaConfig url="gj-laptop:9510"/>
+
+    <defaultCache maxElementsInMemory="10000"
+                  eternal="true"
+                  memoryStoreEvictionPolicy="LRU"
+                  statistics="false" />
+    <cache name="usertable"
+           maxElementsInMemory="10000"
+           eternal="true"
+           memoryStoreEvictionPolicy="LRU"
+           overflowToOffHeap="false">
+    <!-- For standalone unclustered ehcache, comment the following line -->
+	   <terracotta />
+    </cache>
+</ehcache>

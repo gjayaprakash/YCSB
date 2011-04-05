@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<tc:tc-config xmlns:tc="http://www.terracotta.org/config"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.terracotta.org/schema/terracotta-6.xsd">
+
+    <servers>
+        <server host="rh4vqa0.terracotta.lan" name="server1">
+            <dso-port>9510</dso-port>
+            <jmx-port>9520</jmx-port>
+            <l2-group-port>9530</l2-group-port>
+            <data>terracotta/server1/server-data</data>
+            <logs>terracotta/server1/server-logs</logs>
+            <statistics>terracotta/server1/server-statistics</statistics>
+        </server>
+        <server host="rh5vqa0.terracotta.lan" name="server2">
+            <dso-port>9510</dso-port>
+            <jmx-port>9520</jmx-port>
+            <l2-group-port>9530</l2-group-port>
+            <data>terracotta/server2/server-data</data>
+            <logs>terracotta/server2/server-logs</logs>
+            <statistics>terracotta/server2/server-statistics</statistics>
+        </server>
+        <mirror-groups>        
+            <mirror-group>               
+                <members>                       
+                    <member>server1</member>
+                </members> 
+            </mirror-group>
+            <mirror-group>               
+                <members>                       
+                    <member>server2</member>                      
+                </members> 
+            </mirror-group>
+        </mirror-groups>
+    </servers>
+    <clients>       
+        <logs>terracotta/demo-server/client/client-%c/logs</logs>        
+        <dso>              
+            <fault-count>500</fault-count>       
+        </dso> 
+    </clients>
+</tc:tc-config>
