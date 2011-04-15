@@ -77,9 +77,10 @@ def getTPS(tpsString):
 def getLatency(updateString):
     if (updateString.strip() == ""):
         return ["", "", ""]
-    readLatency = re.search("READ.*?=([\d\.]+)", updateString.strip())
-    updateLatency = re.search("UPDATE.*?=([\d\.]+)", updateString.strip())
-    insertLatency = re.search("INSERT.*?=([\d\.]+)", updateString.strip())
+    readLatency = re.search("READ\s.*?=([\d\.]+)", updateString.strip())
+    updateLatency = re.search("UPDATE\s.*?=([\d\.]+)", updateString.strip())
+    insertLatency = re.search("INSERT\s.*?=([\d\.]+)", updateString.strip())
+    insertLatency = re.search("READ-MODIFY-WRITE\s.*?=([\d\.]+)", updateString.strip())
     if(not readLatency):
         readLatency = ""
     else :
