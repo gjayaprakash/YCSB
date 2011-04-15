@@ -20,7 +20,7 @@ def printUsage():
 # 
 
 def writeHeader(outfile):
-    outfile.write("Time, Operations, TPS, READ Average Latencies, UPDATE Average Latencies, INSERT Average Latencies\n")
+    outfile.write("Time, Operations, TPS, READ Average Latencies, UPDATE Average Latencies, INSERT Average Latencies, READ-MODIFY-WRITE Average Latencies\n")
     
 #
 # Parse out useful information from useful log lines and write out to file. 
@@ -80,7 +80,7 @@ def getLatency(updateString):
     readLatency = re.search("READ\s.*?=([\d\.]+)", updateString.strip())
     updateLatency = re.search("UPDATE\s.*?=([\d\.]+)", updateString.strip())
     insertLatency = re.search("INSERT\s.*?=([\d\.]+)", updateString.strip())
-    insertLatency = re.search("READ-MODIFY-WRITE\s.*?=([\d\.]+)", updateString.strip())
+    rmwLatency = re.search("READ-MODIFY-WRITE\s.*?=([\d\.]+)", updateString.strip())
     if(not readLatency):
         readLatency = ""
     else :
@@ -93,7 +93,11 @@ def getLatency(updateString):
         insertLatency = ""
     else :
         insertLatency = insertLatency.group(1)
-    return [readLatency, updateLatency, insertLatency]
+    if(not rmwLatency):
+        rmwLatency = ""
+    else :
+        rmwLatency = rmwLatency.group(1)
+    return [readLatency, updateLatency, insertLatency, rmwLatency]
 
 # 
 # Entry point.
