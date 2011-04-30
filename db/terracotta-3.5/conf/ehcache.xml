@@ -4,7 +4,7 @@
          updateCheck="false" monitoring="off"
          dynamicConfig="false">
     <!-- For standalone unclustered ehcache, comment the following line -->
-    <terracottaConfig url="gj-laptop:9510"/>
+     <terracottaConfig url="gj-laptop:9510"/> 
 
     <defaultCache maxElementsInMemory="100000"
                   eternal="true"
@@ -15,7 +15,10 @@
            eternal="true"
            memoryStoreEvictionPolicy="LRU"
            overflowToOffHeap="false">
+           <searchable keys="false" values="false">
+               <searchAttribute name="count" expression="value.count()"/>
+           </searchable>
     <!-- For standalone unclustered ehcache, comment the following line -->
-	   <terracotta />
+	       <terracotta /> 
     </cache>
 </ehcache>

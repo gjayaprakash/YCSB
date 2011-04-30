@@ -11,6 +11,9 @@ import java.util.Vector;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.search.Attribute;
+import net.sf.ehcache.search.Result;
+import net.sf.ehcache.search.Results;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,21 +30,21 @@ public class TerracottaClient extends DB {
     private CacheManager cacheManager;
     private static final int SUCCESS = 0;
     private static final int ERROR = 1;
-    private static final Logger LOG = LoggerFactory
-    .getLogger(TerracottaClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TerracottaClient.class);
 
     /**
      * Initialise the cache manager for storing records.
      * 
-     * Terracotta clustered cache is assumed.
      */
     @Override
     public void init() throws DBException {
         super.init();
-
         cacheManager = new CacheManager();
     }
 
+    /**
+     * Shutdown the CacheManager instance.
+     */
     @Override
     public void cleanup() throws DBException {
         cacheManager.shutdown();
@@ -49,11 +52,10 @@ public class TerracottaClient extends DB {
         super.cleanup();
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Read is implemented as a simple Cache.get()
      * 
-     * @see com.yahoo.ycsb.DB#read(java.lang.String, java.lang.String,
-     * java.util.Set, java.util.HashMap)
+     * @see com.yahoo.ycsb.DB#read(String, String, Set, HashMap)
      */
     @Override
     public int read(String table, String key, Set<String> fields,
@@ -63,57 +65,78 @@ public class TerracottaClient extends DB {
         if (elem == null) {
             return ERROR;
         }
-        @SuppressWarnings("unchecked")
-        Map<String, String> record = (Map<String, String>) elem.getValue();
-        Set<String> recordFields = (fields != null) ? fields : record.keySet();
+        Record record = (Record) elem.getValue();
+        Map<String, String> retrievedMap = record.value();
+        Set<String> recordFields = (fields != null) ? fields : retrievedMap
+                .keySet();
         for (String field : recordFields) {
-            result.put(field, record.get(field));
+            result.put(field, retrievedMap.get(field));
         }
 
         return SUCCESS;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Scan is implemented by using the Ehcache Search API
+     * 
      * 
      * @see com.yahoo.ycsb.DB#scan(java.lang.String, java.lang.String, int,
-     * java.util.Set, java.util.Vector)
+     *      java.util.Set, java.util.Vector)
      */
     @Override
     public int scan(String table, String startkey, int recordcount,
             Set<String> fields, Vector<HashMap<String, String>> result) {
         LOG.warn("Scan not supported by the Terracotta DB Client.");
-        return ERROR;
+
+        Ehcache cache = cacheManager.getEhcache(table);
+        Long startRecord = ((Record) cache.get(startkey).getValue()).count();
+        Attribute<Long> count = cache.getSearchAttribute("count");
+        Results results = cache
+        .createQuery()
+        .includeValues()
+        .addCriteria(
+                count.between(startRecord, startRecord + recordcount))
+                .execute();
+        for (Result r : results.all()) {
+            result.add(new HashMap<String, String>(((Record) r.getValue())
+                    .value()));
+        }
+        return SUCCESS;
     }
 
-    /*
-     * (non-Javadoc) Updates and inserts are the same for an Ehcache
+    /**
+     * Updates and inserts are the same for an Ehcache
      * 
      * @see com.yahoo.ycsb.DB#update(java.lang.String, java.lang.String,
-     * java.util.HashMap)
+     *      java.util.HashMap)
      */
     @Override
     public int update(String table, String key, HashMap<String, String> values) {
         return insert(table, key, values);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * The insert operation is implemented by doing a Cache.put
+     * 
+     * The values HashMap is stored with an entry count in a Record object
+     * that's put into the cache.
      * 
      * @see com.yahoo.ycsb.DB#insert(java.lang.String, java.lang.String,
-     * java.util.HashMap)
+     *      java.util.HashMap)
      */
     @Override
     public int insert(String table, String key, HashMap<String, String> values) {
         Ehcache cache = cacheManager.getEhcache(table);
-        Element elem = new Element(key, values);
+        Record r = new Record(Long.parseLong(key.replaceFirst("user", "")),
+                values);
+        Element elem = new Element(key, r);
         cache.put(elem);
 
         return SUCCESS;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Delete is a Cache.remove()
      * 
      * @see com.yahoo.ycsb.DB#delete(java.lang.String, java.lang.String)
      */
