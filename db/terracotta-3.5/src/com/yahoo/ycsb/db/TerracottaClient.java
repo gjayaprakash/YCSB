@@ -15,9 +15,6 @@ import net.sf.ehcache.search.Attribute;
 import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
 
@@ -30,7 +27,9 @@ public class TerracottaClient extends DB {
     private CacheManager cacheManager;
     private static final int SUCCESS = 0;
     private static final int ERROR = 1;
-    private static final Logger LOG = LoggerFactory.getLogger(TerracottaClient.class);
+
+    // private static final Logger LOG =
+    // LoggerFactory.getLogger(TerracottaClient.class);
 
     /**
      * Initialise the cache manager for storing records.
@@ -86,7 +85,6 @@ public class TerracottaClient extends DB {
     @Override
     public int scan(String table, String startkey, int recordcount,
             Set<String> fields, Vector<HashMap<String, String>> result) {
-        LOG.warn("Scan not supported by the Terracotta DB Client.");
 
         Ehcache cache = cacheManager.getEhcache(table);
         Long startRecord = ((Record) cache.get(startkey).getValue()).count();
