@@ -14,6 +14,9 @@
            eternal="true"
            memoryStoreEvictionPolicy="LRU"
            overflowToOffHeap="false">
+           <searchable keys="false" values="false">
+               <searchAttribute name="count" expression="value.count()"/>
+           </searchable>
     <!-- For standalone unclustered ehcache, comment the following line -->
 	       <terracotta /> 
     </cache>

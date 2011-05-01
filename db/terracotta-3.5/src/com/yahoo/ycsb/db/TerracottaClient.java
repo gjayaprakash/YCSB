@@ -15,6 +15,9 @@ import net.sf.ehcache.search.Attribute;
 import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
 
@@ -28,8 +31,8 @@ public class TerracottaClient extends DB {
     private static final int SUCCESS = 0;
     private static final int ERROR = 1;
 
-    // private static final Logger LOG =
-    // LoggerFactory.getLogger(TerracottaClient.class);
+    private static final Logger LOG = LoggerFactory
+            .getLogger(TerracottaClient.class);
 
     /**
      * Initialise the cache manager for storing records.
@@ -78,6 +81,9 @@ public class TerracottaClient extends DB {
     /**
      * Scan is implemented by using the Ehcache Search API
      * 
+     * The scan operation will use a search for all elements with a "count"
+     * value between the count value of the startKey and (startKey +
+     * recordcount).
      * 
      * @see com.yahoo.ycsb.DB#scan(java.lang.String, java.lang.String, int,
      *      java.util.Set, java.util.Vector)
@@ -87,6 +93,10 @@ public class TerracottaClient extends DB {
             Set<String> fields, Vector<HashMap<String, String>> result) {
 
         Ehcache cache = cacheManager.getEhcache(table);
+        if (!cache.isSearchable()) {
+            LOG.error("Scan not implemented for caches that aren't searchable. See README.");
+            return ERROR;
+        }
         Long startRecord = ((Record) cache.get(startkey).getValue()).count();
         Attribute<Long> count = cache.getSearchAttribute("count");
         Results results = cache
