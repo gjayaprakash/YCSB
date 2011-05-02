@@ -41,7 +41,7 @@ public class TerracottaClient extends DB {
     @Override
     public void init() throws DBException {
         super.init();
-        cacheManager = new CacheManager();
+        cacheManager = CacheManager.getInstance();
     }
 
     /**
