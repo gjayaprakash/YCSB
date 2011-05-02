@@ -45,16 +45,6 @@ public class TerracottaClient extends DB {
     }
 
     /**
-     * Shutdown the CacheManager instance.
-     */
-    @Override
-    public void cleanup() throws DBException {
-        cacheManager.shutdown();
-
-        super.cleanup();
-    }
-
-    /**
      * Read is implemented as a simple Cache.get()
      * 
      * @see com.yahoo.ycsb.DB#read(String, String, Set, HashMap)
