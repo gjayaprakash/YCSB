@@ -32,7 +32,7 @@ public class TerracottaClient extends DB {
     private static final int ERROR = 1;
 
     private static final Logger LOG = LoggerFactory
-            .getLogger(TerracottaClient.class);
+    .getLogger(TerracottaClient.class);
 
     /**
      * Initialise the cache manager for storing records.
@@ -94,7 +94,7 @@ public class TerracottaClient extends DB {
 
         Ehcache cache = cacheManager.getEhcache(table);
         if (!cache.isSearchable()) {
-            LOG.error("Scan not implemented for caches that aren't searchable. See README.");
+            LOG.error("Scan not implemented for caches that aren't searchable. See db/terracotta-3.5/README.");
             return ERROR;
         }
         Long startRecord = ((Record) cache.get(startkey).getValue()).count();
