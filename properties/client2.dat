@@ -1,6 +1,6 @@
-recordcount=100000
-operationcount=10000000
-insertstart=25000
-insertcount=25000
+recordcount=5000000
+operationcount=2000000
+insertstart=1250000
+insertcount=1250000
 threadcount=50
 requestdistribution=zipfian
