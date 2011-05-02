@@ -12,7 +12,7 @@ locations: -
  c. slf4j-api-1.6.1.jar (from <extracted kit>/ehcache/lib)
  d. slf4j-jdk14-1.6.1.jar (from <extracted kit>/ehcache/lib)
  e. terracotta-toolkit-1.2-runtime-ee-3.0.0.jar  (from <extracted kit>/common)
-3. run `ant db-terracotta-3.5` from the ycsb source directory
+3. run `ant dbcompile-terracotta-3.5` from the ycsb source directory
 
 == Running with the Terracotta DB client ==
 
