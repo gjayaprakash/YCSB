@@ -18,9 +18,15 @@
 package com.yahoo.ycsb;
 
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Vector;
 
 import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
@@ -144,6 +150,8 @@ class ClientThread extends Thread
 	Workload _workload;
 	int _opcount;
 	double _target;
+	long _duration;
+	final boolean _isTimeBased;
 
 	int _opsdone;
 	int _threadid;
@@ -176,12 +184,35 @@ class ClientThread extends Thread
 		_threadid=threadid;
 		_threadcount=threadcount;
 		_props=props;
+		_duration = -1;
+		_isTimeBased = false;
+		//System.out.println("Interval = "+interval);
+	}
+
+	public ClientThread(DB db, boolean dotransactions, Workload workload, int threadid, int threadcount, Properties props, long durationInSecs, double targetperthreadperms)
+	{
+		//TODO: consider removing threadcount and threadid
+		_db=db;
+		_dotransactions=dotransactions;
+		_workload=workload;
+		_opcount= Integer.MAX_VALUE;
+		_duration = durationInSecs * 1000;
+		_opsdone=0;
+		_target=targetperthreadperms;
+		_threadid=threadid;
+		_threadcount=threadcount;
+		_props=props;
+		_isTimeBased = true;
 		//System.out.println("Interval = "+interval);
 	}
 
 	public int getOpsDone()
 	{
 		return _opsdone;
+	}
+	
+	private static long now(){
+		return System.currentTimeMillis();
 	}
 
 	public void run()
@@ -227,16 +258,19 @@ class ClientThread extends Thread
 		{
 			if (_dotransactions)
 			{
-				long st=System.currentTimeMillis();
+				long st=now();
 
-				while ( (_opcount==0) || (_opsdone<_opcount) )
+				while ((_opcount==0) || (_opsdone<_opcount))
 				{
-
+					if (_isTimeBased && (now() - st > _duration)){
+						System.err.println("Test completed.");
+						break;
+					}
+					
 					if (!_workload.doTransaction(_db,_workloadstate))
 					{
 						break;
 					}
-
 					_opsdone++;
 
 					//throttle the operations
@@ -246,7 +280,7 @@ class ClientThread extends Thread
 						//like sleeping for (1/target throughput)-operation latency,
 						//because it smooths timing inaccuracies (from sleep() taking an int, 
 						//current time in millis) over many operations
-						while (System.currentTimeMillis()-st<((double)_opsdone)/_target)
+						while (now()-st<((double)_opsdone)/_target)
 						{
 							try
 							{
@@ -256,14 +290,13 @@ class ClientThread extends Thread
 							{
 								//do nothing
 							}
-
 						}
 					}
 				}
 			}
 			else
 			{
-				long st=System.currentTimeMillis();
+				long st=now();
 
 				while ( (_opcount==0) || (_opsdone<_opcount) )
 				{
@@ -282,7 +315,7 @@ class ClientThread extends Thread
 						//like sleeping for (1/target throughput)-operation latency,
 						//because it smooths timing inaccuracies (from sleep() taking an int, 
 						//current time in millis) over many operations
-						while (System.currentTimeMillis()-st<((double)_opsdone)/_target)
+						while (now()-st<((double)_opsdone)/_target)
 						{
 							try 
 							{
@@ -335,6 +368,10 @@ public class Client
 	 * should support the "insertstart" property, which tells them which record to start at.
 	 */
 	public static final String INSERT_COUNT_PROPERTY="insertcount";
+
+	private static final String TIME_BASED_PROPERTY = "timeBased";
+
+	private static final String TEST_DURATION = "testDuration";
 
 	public static void usageMessage()
 	{
@@ -712,9 +749,18 @@ public class Client
 				System.out.println("Unknown DB "+dbname);
 				System.exit(0);
 			}
+			
+			boolean timeBased=Boolean.parseBoolean(props.getProperty(TIME_BASED_PROPERTY,"false"));
 
-			Thread t=new ClientThread(db,dotransactions,workload,threadid,threadcount,props,opcount/threadcount,targetperthreadperms);
-
+			Thread t;
+			if (timeBased){
+				long duration=Long.parseLong(props.getProperty(TEST_DURATION,"900"));
+				System.err.println("Running Test for " + duration + " secs...");
+				t=new ClientThread(db,dotransactions,workload,threadid,threadcount,props,duration,targetperthreadperms);
+			}
+			else
+				t=new ClientThread(db,dotransactions,workload,threadid,threadcount,props,opcount/threadcount,targetperthreadperms);	
+			
 			threads.add(t);
 			//t.start();
 		}
