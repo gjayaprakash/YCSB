@@ -93,7 +93,7 @@ public class TerracottaClient extends DB {
         .createQuery()
         .includeValues()
         .addCriteria(
-                count.between(startRecord, startRecord + recordcount))
+count.ge(startRecord)).maxResults(recordcount)
                 .execute();
         for (Result r : results.all()) {
             result.add(new HashMap<String, String>(((Record) r.getValue())
